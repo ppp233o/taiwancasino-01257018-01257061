@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遊戲主頁</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('01.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        #chips {
+            font-size: 18px;
+            position: relative;
+            left: -20px;  /* 向左移動20px */
+        }
+
+        #game-buttons {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .game-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid gold;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .game-button:hover {
+            background-color: gold;
+            color: black;
+            transform: scale(1.2);
+        }
+
+        #intro {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            padding: 20px;
+            max-width: 800px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            font-size: 18px;
+            line-height: 1.6;
+            border: 2px solid gold;
+            box-shadow: 0 0 15px gold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>台灣線上賭城</h1>
+        <div id="chips">籌碼: $1000000</div>
+    </header>
+
+    <div id="game-buttons">
+        <a href="test_h.html" class="game-button">🏇 賽馬遊戲</a>
+        <a href="test_card.html" class="game-button">🃏 撲克牌比大小</a>
+        <a href="test_lott.html" class="game-button">🎰 樂透</a>
+        <a href="test_21.html" class="game-button">🃏 21點</a>
+        <a href="test_18.html" class="game-button">🎲 18</a>
+    </div>
+
+    <div id="intro">
+        歡迎來到台灣線上賭城！這裡有多種刺激的遊戲，等著你來挑戰！
+        請記住，賭博有風險，務必量力而行。贏家可以榮登大富翁，而輸家可能會踏上還債之路，甚至進入監獄。
+    </div>
+
+    <script>
+        // 確保籌碼初始化
+        let playerChips = parseInt(localStorage.getItem("playerChips")) || 1000000;
+
+        function updateChipsDisplay() {
+            document.getElementById('chips').textContent = `籌碼: $${playerChips.toLocaleString()}`;
+        }
+
+        updateChipsDisplay();
+    </script>
+</body>
+</html>
