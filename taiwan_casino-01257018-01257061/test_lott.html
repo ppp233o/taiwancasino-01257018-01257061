@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大樂透遊戲</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle, #ffcc00, #ff5733, #c70039, #900c3f);
+            color: #fff;
+            overflow: hidden;
+        }
+        .container {
+            margin-top: 50px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            display: inline-block;
+            width: 80%;
+            max-width: 600px;
+        }
+        h1 {
+            font-size: 36px;
+            color: #ffcc00;
+            text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff6600;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 18px;
+            color: #fff;
+        }
+        .lotto-input {
+            margin: 20px 0;
+        }
+        .lotto-input input {
+            width: 50px;
+            text-align: center;
+            font-size: 18px;
+            margin: 5px;
+            padding: 10px;
+            border: 2px solid #ffcc00;
+            border-radius: 50%;
+            background-color: #fff;
+            color: #333;
+            box-shadow: 0 0 10px #ff6600;
+            transition: all 0.3s ease-in-out;
+        }
+        .lotto-input input:focus {
+            border-color: #ff6600;
+            box-shadow: 0 0 20px #ff6600, 0 0 40px #ffcc00;
+            outline: none;
+        }
+        button {
+            background: linear-gradient(45deg, #ff6600, #ffcc00);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease-in-out;
+        }
+        button:hover {
+            background: linear-gradient(45deg, #ffcc00, #ff6600);
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(255, 102, 0, 0.8);
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #fff;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.6));
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        .result p {
+            margin: 10px 0;
+        }
+        #winningNumbers {
+            font-weight: bold;
+            color: #00e676;
+            text-shadow: 0 0 5px #00e676, 0 0 10px #00ff00;
+        }
+        #specialNumber {
+            font-weight: bold;
+            color: #ff1744;
+            text-shadow: 0 0 5px #ff1744, 0 0 10px #ff5252;
+        }
+        #userNumbers {
+            font-weight: bold;
+            color: #2979ff;
+            text-shadow: 0 0 5px #2979ff, 0 0 10px #448aff;
+        }
+        #matchResult {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd600;
+            text-shadow: 0 0 5px #ffd600, 0 0 15px #ffcc00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>大樂透遊戲</h1>
+        <div id="chips">籌碼: $1000000</div>
+        <p>請從 01~49 中選擇 6 個號碼進行投注！</p>
+        <div class="lotto-input">
+            <input type="number" class="user-number" min="1" max="49" placeholder="1">
+            <input type="number" class="user-number" min="1" max="49" placeholder="2">
+            <input type="number" class="user-number" min="1" max="49" placeholder="3">
+            <input type="number" class="user-number" min="1" max="49" placeholder="4">
+            <input type="number" class="user-number" min="1" max="49" placeholder="5">
+            <input type="number" class="user-number" min="1" max="49" placeholder="6">
+        </div>
+        <button id="playButton">開獎</button>
+        <div class="result">
+            <p id="winningNumbers">中獎號碼: -</p>
+            <p id="specialNumber">特別號: -</p>
+            <p id="userNumbers">您的號碼: -</p>
+            <p id="matchResult">結果: -</p>
+        </div>
+    </div>
+
+    <script>
+        let playerChips = parseInt(localStorage.getItem("playerChips")) || 1000000;
+
+        function updateChipsDisplay() {
+            document.getElementById('chips').textContent = `籌碼: $${playerChips.toLocaleString()}`;
+            localStorage.setItem("playerChips", playerChips); // 同步儲存
+        }
+
+        function generateRandomNumbers(count, max) {
+            const numbers = new Set();
+            while (numbers.size < count) {
+                numbers.add(Math.floor(Math.random() * max) + 1);
+            }
+            return Array.from(numbers);
+        }
+
+        function compareNumbers(userNumbers, winningNumbers, specialNumber) {
+            let matchCount = 0;
+            let specialMatch = false;
+
+            userNumbers.forEach(num => {
+                if (winningNumbers.includes(num)) {
+                    matchCount++;
+                }
+                if (num === specialNumber) {
+                    specialMatch = true;
+                }
+            });
+
+            if (matchCount === 6) return '頭獎 (與當期六個獎號完全相同)';
+            if (matchCount === 5 && specialMatch) return '貳獎 (對中當期獎號之任五碼 + 特別號)';
+            if (matchCount === 5) return '參獎 (對中當期獎號之任五碼)';
+            if (matchCount === 4 && specialMatch) return '肆獎 (對中當期獎號之任四碼 + 特別號)';
+            if (matchCount === 4) return '伍獎 (對中當期獎號之任四碼)';
+            if (matchCount === 3 && specialMatch) return '陸獎 (對中當期獎號之任三碼 + 特別號)';
+            if (matchCount === 2 && specialMatch) return '柒獎 (對中當期獎號之任兩碼 + 特別號)';
+            if (matchCount === 3) return '普獎 (對中當期獎號之任三碼)';
+            return '未中獎';
+        }
+
+        document.getElementById('playButton').addEventListener('click', () => {
+            const userInputs = document.querySelectorAll('.user-number');
+            const userNumbers = Array.from(userInputs).map(input => parseInt(input.value)).filter(num => !isNaN(num));
+
+            if (userNumbers.length !== 6 || new Set(userNumbers).size !== 6) {
+                alert('請輸入 6 個不同的號碼 (01~49)');
+                return;
+            }
+
+            playerChips -= 10000;
+
+            const winningNumbers = generateRandomNumbers(6, 49);
+            const specialNumber = generateRandomNumbers(1, 49)[0];
+
+            document.getElementById('winningNumbers').textContent = `中獎號碼: ${winningNumbers.join(', ')}`;
+            document.getElementById('specialNumber').textContent = `特別號: ${specialNumber}`;
+            document.getElementById('userNumbers').textContent = `您的號碼: ${userNumbers.join(', ')}`;
+
+            const result = compareNumbers(userNumbers, winningNumbers, specialNumber);
+            document.getElementById('matchResult').textContent = `結果: ${result}`;
+
+            if (result.includes('頭獎')) playerChips += 20000000;
+            else if (result.includes('貳獎')) playerChips += 1000000;
+            else if (result.includes('參獎')) playerChips += 50000;
+            else if (result.includes('肆獎')) playerChips += 10000;
+            else if (result.includes('伍獎')) playerChips += 5000;
+            else if (result.includes('陸獎')) playerChips += 1000;
+            else if (result.includes('柒獎')) playerChips += 500;
+            else if (result.includes('普獎')) playerChips += 100;
+
+            updateChipsDisplay();
+        });
+
+        updateChipsDisplay();
+    </script>
+</body>
+</html>

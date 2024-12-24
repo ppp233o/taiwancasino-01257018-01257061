@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>賽馬遊戲</title>
+    <style>
+        body {
+            font-family: "Courier New", Courier, monospace;
+            background: radial-gradient(circle, #2c3e50, #000000);
+            color: #ecf0f1;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .track {
+            position: relative;
+            width: 80%;
+            margin: 20px auto;
+            height: 80px;
+            background: linear-gradient(to right, #666, #999);
+            border: 3px solid #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .horse {
+            position: absolute;
+            top: 25px;
+            width: 60px;
+            height: 40px;
+            transition: left 0.05s linear;
+        }
+
+        .horse img {
+            width: 100%;
+            height: auto;
+        }
+
+        .result {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #f39c12;
+            text-shadow: 0 0 10px rgba(243, 156, 18, 0.8), 0 0 20px rgba(243, 156, 18, 0.6);
+            margin-bottom: 20px;
+        }
+
+        #chips {
+            font-size: 20px;
+            color: #ecf0f1;
+            margin-top: 10px;
+        }
+
+        button {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <h1>🏇 賽馬遊戲 🏇</h1>
+    <div id="chips">籌碼: $1000000</div>
+    <p>選擇一匹馬下注，然後開始比賽，看看你的選擇是否獲勝！</p>
+    <div>
+        <label for="bet">選擇你的馬匹：</label>
+        <select id="bet">
+            <option value="1">馬匹 1</option>
+            <option value="2">馬匹 2</option>
+            <option value="3">馬匹 3</option>
+        </select>
+    </div>
+    <button onclick="startRace()">開始賽馬</button>
+    <div id="betInfo"></div>
+    <div class="track" id="track1">
+        <div class="horse" id="horse1" style="left: 0;">
+            <img src="whitehorse.png" alt="Horse 1">
+        </div>
+    </div>
+    <div class="track" id="track2">
+        <div class="horse" id="horse2" style="left: 0;">
+            <img src="blackhorse.png" alt="Horse 2">
+        </div>
+    </div>
+    <div class="track" id="track3">
+        <div class="horse" id="horse3" style="left: 0;">
+            <img src="brownhorse.png" alt="Horse 3">
+        </div>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        let playerChips = parseInt(localStorage.getItem("playerChips")) || 1000000;
+
+        function updateChipsDisplay() {
+            document.getElementById('chips').textContent = `籌碼: $${playerChips.toLocaleString()}`;
+            localStorage.setItem("playerChips", playerChips); // 同步儲存
+
+            if (playerChips <= 0) {
+                document.body.innerHTML = `
+                    <img src="ghost.jpg" alt="Game Over" style="width: 300px; height: 300px; margin-top: 50px;">
+                    <h2 style="color: #f1c40f;">籌碼已用盡！即將跳轉到猜拳遊戲...</h2>
+                `;
+                setTimeout(() => {
+                    window.location.href = 'Rock, Paper, Scissors.html';
+                }, 3000);
+            }
+        }
+
+        function startRace() {
+            const selectedBet = document.getElementById("bet").value;
+            const horses = [
+                { id: "horse1", progress: 0 },
+                { id: "horse2", progress: 0 },
+                { id: "horse3", progress: 0 }
+            ];
+            const finishLine = document.getElementById("track1").offsetWidth - 60;
+            let raceInterval = setInterval(() => {
+                horses.forEach(horse => {
+                    horse.progress += Math.random() * 10 + 5;
+                    document.getElementById(horse.id).style.left = horse.progress + "px";
+                    if (horse.progress >= finishLine) {
+                        clearInterval(raceInterval);
+                        const winner = horse.id.replace("horse", "");
+                        const resultDiv = document.getElementById("result");
+                        resultDiv.innerHTML = `🏆 贏家是馬匹 ${winner}！`;
+                        if (winner === selectedBet) {
+                            playerChips += 10000;
+                        } else {
+                            playerChips -= 10000;
+                        }
+                        updateChipsDisplay();
+                        horses.forEach(h => h.progress = 0); // 重置進度
+                    }
+                });
+            }, 50);
+        }
+
+        updateChipsDisplay();
+    </script>
+</body>
+</html>

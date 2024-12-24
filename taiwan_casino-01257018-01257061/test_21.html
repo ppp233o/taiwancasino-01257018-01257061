@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二十一點遊戲</title>
+    <style>
+        body {
+            font-family: "Courier New", Courier, monospace;
+            background: radial-gradient(circle, #2c3e50, #000000);
+            color: #ecf0f1;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #game-table {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(44, 62, 80, 0.8);
+            border: 5px solid #e74c3c;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.8);
+        }
+
+        .player, .dealer {
+            display: flex;
+            justify-content: center;
+            margin: 10px;
+        }
+
+        .card {
+            width: 60px;
+            height: 90px;
+            margin: 5px;
+            border: 2px solid #ecf0f1;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        button {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+        }
+
+        .message {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #f1c40f;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #f39c12;
+            text-shadow: 0 0 10px rgba(243, 156, 18, 0.8), 0 0 20px rgba(243, 156, 18, 0.6);
+            margin-bottom: 20px;
+        }
+
+        #chips {
+            font-size: 20px;
+            color: #ecf0f1;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>二十一點遊戲</h1>
+    <div id="chips">籌碼: $1000000</div>
+    <div id="game-table">
+        <div class="dealer" id="dealer-cards">
+            <img src="00.jpg" alt="Dealer's Card" class="card">
+            <img src="00.jpg" alt="Dealer's Card" class="card">
+        </div>
+
+        <div class="player" id="player-cards">
+            <img src="1-1.jpg" alt="Player's Card" class="card">
+            <img src="1-2.jpg" alt="Player's Card" class="card">
+        </div>
+
+        <div class="controls">
+            <button onclick="hit()">要牌</button>
+            <button onclick="stand()">停牌</button>
+            <button onclick="double()">加倍</button>
+        </div>
+
+        <div class="message" id="game-message"></div>
+    </div>
+    <script>
+        let playerChips = parseInt(localStorage.getItem("playerChips")) || 1000000;
+
+        function updateChipsDisplay() {
+            document.getElementById('chips').textContent = `籌碼: $${playerChips.toLocaleString()}`;
+
+            if (playerChips <= 0) {
+                document.body.innerHTML = `
+                    <img src="ghost.jpg" alt="Game Over" style="width: 300px; height: 300px; margin-top: 50px;">
+                    <h2 style="color: #f1c40f;">籌碼已用盡！即將跳轉到猜拳遊戲...</h2>
+                `;
+                setTimeout(() => {
+                    window.location.href = 'Rock, Paper, Scissors.html';
+                }, 3000);
+            }
+        }
+
+        const suits = ['1', '2', '3', '4'];
+        const values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '1'];
+
+        let deck = [];
+        let playerHand = [];
+        let dealerHand = [];
+        let playerScore = 0;
+        let dealerScore = 0;
+        let isGameOver = false;
+        let isDouble = false;
+
+        function createDeck() {
+            deck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({ suit, value });
+                }
+            }
+            shuffleDeck();
+        }
+
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        function drawCard() {
+            return deck.pop();
+        }
+
+        function calculateScore(hand) {
+            let score = 0;
+            let hasAce = false;
+            hand.forEach(card => {
+                if (['11', '12', '13', '10'].includes(card.value)) {
+                    score += 10;
+                } else if (card.value === '1') {
+                    score += 11;
+                    hasAce = true;
+                } else {
+                    score += parseInt(card.value);
+                }
+            });
+            if (hasAce && score > 21) score -= 10;
+            return score;
+        }
+
+        function displayHands() {
+            let playerCardsHTML = '';
+            playerHand.forEach(card => {
+                playerCardsHTML += `<img src="${card.value}-${card.suit}.jpg" alt="Player's Card" class="card">`;
+            });
+            document.getElementById('player-cards').innerHTML = playerCardsHTML;
+
+            let dealerCardsHTML = '';
+            dealerHand.forEach((card, index) => {
+                if (isGameOver) {
+                    dealerCardsHTML += `<img src="${card.value}-${card.suit}.jpg" alt="Dealer's Card" class="card">`;
+                } else {
+                    dealerCardsHTML += `<img src="00.jpg" alt="Dealer's Card" class="card">`;
+                }
+            });
+            document.getElementById('dealer-cards').innerHTML = dealerCardsHTML;
+
+            playerScore = calculateScore(playerHand);
+            dealerScore = calculateScore(dealerHand);
+
+            document.getElementById('game-message').textContent = isGameOver 
+                ? `玩家點數: ${playerScore} | 莊家點數: ${dealerScore}`
+                : `玩家點數: ${playerScore}`;
+        }
+
+        function dealInitialCards() {
+            createDeck();
+            playerHand = [drawCard(), drawCard()];
+            dealerHand = [drawCard(), drawCard()];
+            displayHands();
+        }
+
+        function hit() {
+            if (isGameOver) return;
+            playerHand.push(drawCard());
+            displayHands();
+            if (playerScore > 21) {
+                document.getElementById('game-message').textContent = '玩家爆牌！莊家勝利！';
+                playerChips -= 10000;
+                isGameOver = true;
+                localStorage.setItem("playerChips", playerChips);
+                updateChipsDisplay();
+            }
+        }
+
+        function stand() {
+            if (isGameOver) return;
+            while (dealerScore < 17) {
+                dealerHand.push(drawCard());
+                dealerScore = calculateScore(dealerHand);
+            }
+            isGameOver = true;
+            displayHands();
+
+            if (dealerScore > 21) {
+                document.getElementById('game-message').textContent = '莊家爆牌！玩家勝利！';
+                playerChips += 10000;
+            } else if (playerScore > dealerScore) {
+                document.getElementById('game-message').textContent = '玩家勝利！';
+                playerChips += 10000;
+            } else if (playerScore < dealerScore) {
+                document.getElementById('game-message').textContent = '莊家勝利！';
+                playerChips -= 1000000;
+            } else {
+                document.getElementById('game-message').textContent = '平手！';
+            }
+
+            localStorage.setItem("playerChips", playerChips);
+            updateChipsDisplay();
+        }
+
+        function double() {
+            if (isGameOver) return;
+            if (isDouble) {
+                alert('你已經加倍過了!');
+                return;
+            }
+            isDouble = true;
+            playerChips -= 10000;
+            hit();
+            stand();
+        }
+
+        dealInitialCards();
+        updateChipsDisplay();
+    </script>
+</body>
+</html>

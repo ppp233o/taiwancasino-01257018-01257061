@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>撲克牌比大小遊戲</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #4c6ef5, #22b8cf);
+            color: #ffffff;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            cursor: pointer;
+            background: #51cf66;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #37b24d;
+        }
+        .cards {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 30px 0;
+        }
+        .card-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .label {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px #000;
+        }
+        .card {
+            width: 140px;
+            height: 200px;
+            border: 2px solid #ffffff;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .card img {
+            width: 100%;
+            height: auto;
+        }
+        .result {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            color: #ffffff;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1>撲克牌比大小遊戲</h1>
+    <div id="chips">籌碼: $1000000</div>
+    <p>遊戲規則：先比數字大小，數字相同則比花色大小（黑桃 > 愛心 > 菱形 > 梅花）。</p>
+    <button onclick="playGame()">抽牌開始</button>
+
+    <div class="cards">
+        <div class="card-container">
+            <div class="label">電腦</div>
+            <div class="card" id="computerCard">
+                <img src="blank_pic.png" alt="電腦牌">
+            </div>
+        </div>
+        <div class="card-container">
+            <div class="label">玩家</div>
+            <div class="card" id="playerCard">
+                <img src="blank_pic.png" alt="玩家牌">
+            </div>
+        </div>
+    </div>
+
+    <div class="result" id="cardGameResult"></div>
+
+    <script>
+        // 初始化籌碼數量
+        let playerChips = parseInt(localStorage.getItem("playerChips")) || 1000000;
+
+        function updateChipsDisplay() {
+            document.getElementById('chips').textContent = `籌碼: $${playerChips.toLocaleString()}`;
+            localStorage.setItem("playerChips", playerChips); // 更新籌碼至本地存儲
+
+            if (playerChips <= 0) {
+                document.body.innerHTML = `
+                    <img src="ghost.jpg" alt="Game Over" style="width: 300px; height: 300px; margin-top: 50px;">
+                    <h2 style="color: #f1c40f;">籌碼已用盡！即將跳轉到猜拳遊戲...</h2>
+                `;
+                setTimeout(() => {
+                    window.location.href = 'Rock, Paper, Scissors.html';
+                }, 3000);
+            }
+        }
+
+        const suits = ["spades", "hearts", "diamonds", "clubs"];
+        const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+        const suitRank = { "spades": 4, "hearts": 3, "diamonds": 2, "clubs": 1 }; 
+        const valueRank = { "A": 14, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "J": 11, "Q": 12, "K": 13 };
+
+        function drawCard() {
+            const suit = suits[Math.floor(Math.random() * suits.length)];
+            const value = values[Math.floor(Math.random() * values.length)];
+            return { suit, value };
+        }
+
+        function compareCards(playerCard, computerCard) {
+            const playerValue = valueRank[playerCard.value];
+            const computerValue = valueRank[computerCard.value];
+
+            if (playerValue > computerValue) {
+                playerChips += 10000;
+                return "玩家贏了！";
+            } else if (playerValue < computerValue) {
+                playerChips -= 10000;
+                return "電腦贏了！";
+            } else {
+                const playerSuit = suitRank[playerCard.suit];
+                const computerSuit = suitRank[computerCard.suit];
+                if (playerSuit > computerSuit) {
+                    playerChips += 10000;
+                    return "玩家贏了！";
+                } else if (playerSuit < computerSuit) {
+                    playerChips -= 10000;
+                    return "電腦贏了！";
+                } else {
+                    return "平手！";
+                }
+            }
+        }
+
+        function getCardImage(card) {
+            const basePath = "https://deckofcardsapi.com/static/img/";
+            const value = card.value === "10" ? "0" : card.value;
+            const suitMap = { "spades": "S", "hearts": "H", "diamonds": "D", "clubs": "C" };
+            return `${basePath}${value}${suitMap[card.suit]}.png`;
+        }
+
+        function playGame() {
+
+
+            const playerCard = drawCard();
+            const computerCard = drawCard();
+
+            document.getElementById("playerCard").innerHTML = `<img src="${getCardImage(playerCard)}" alt="玩家牌">`;
+            document.getElementById("computerCard").innerHTML = `<img src="${getCardImage(computerCard)}" alt="電腦牌">`;
+
+            const result = compareCards(playerCard, computerCard);
+            document.getElementById("cardGameResult").innerHTML = result;
+
+            updateChipsDisplay();
+        }
+
+        // 初始化顯示
+        updateChipsDisplay();
+    </script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock, Paper, Scissors - Two Players</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #2d0a0a; /* 深紅背景 */
+            color: #ff4d4d; /* 火紅字體 */
+            margin: 20px;
+            background-image: url('hellfire.jpg'); /* 地獄火焰背景圖片 */
+            background-size: cover;
+            animation: burnEffect 5s infinite alternate;
+        }
+        
+        h1 {
+            color: #ff0000; /* 火紅字體 */
+            font-size: 3em;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7), 0 0 30px rgba(255, 0, 0, 0.5);
+        }
+        
+        .choices button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+            background-color: #ff3300; /* 地獄般的紅色 */
+            border: 3px solid #ff0000;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px #ff0000, 0 0 15px #ff0000;
+            transition: all 0.3s ease;
+        }
+
+        .choices button:hover {
+            background-color: #ff1a1a; /* 當按鈕被懸停時，變成更亮的紅色 */
+            box-shadow: 0 0 15px #ff1a1a, 0 0 20px #ff1a1a;
+        }
+
+        .images img {
+            width: 120px;
+            height: 120px;
+            margin: 10px;
+            border: 3px solid #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+            transition: all 0.3s ease;
+        }
+
+        .images img:hover {
+            transform: scale(1.1); /* 當圖片被懸停時，輕微放大 */
+        }
+
+        #result, #final-result, #score {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+        }
+
+        #result {
+            color: #ff3300; /* 熾熱紅色 */
+        }
+
+        #score {
+            color: #ff6600; /* 橙紅色 */
+        }
+
+        #final-result {
+            font-size: 30px;
+            color: #ff0000; /* 終極紅色 */
+        }
+
+        @keyframes burnEffect {
+            0% {
+                background-color: #2d0a0a;
+                opacity: 1;
+            }
+            50% {
+                background-color: #660000;
+                opacity: 0.8;
+            }
+            100% {
+                background-color: #2d0a0a;
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Rock, Paper, Scissors - Two Players</h1>
+    <p>First to 2 wins! Player, choose your move:</p>
+    <div class="choices">
+        <button onclick="playGame('Rock')">Rock</button>
+        <button onclick="playGame('Paper')">Paper</button>
+        <button onclick="playGame('Scissors')">Scissors</button>
+    </div>
+    <div class="images">
+        <div>
+            <h3>Your Choice</h3>
+            <img id="player-choice" src="blank.jpg" alt="Your choice">
+        </div>
+        <div>
+            <h3>Dealer's Choice</h3>
+            <img id="dealer-choice" src="blank.jpg" alt="Dealer's choice">
+        </div>
+    </div>
+    <div id="score">Player Wins: 0 | Dealer Wins: 0</div>
+    <div id="result"></div>
+    <div id="result-image"></div>
+    <div id="final-result"></div>
+
+    <script>
+        let playerWins = 0;
+        let dealerWins = 0;
+
+        function playGame(playerChoice) {
+            const choices = ['Rock', 'Paper', 'Scissors'];
+            const dealerChoice = choices[Math.floor(Math.random() * 3)];
+
+            const choiceImages = {
+                'Rock': '002.jpg',
+                'Paper': '003.jpg',
+                'Scissors': '001.jpg'
+            };
+
+            document.getElementById('player-choice').src = choiceImages[playerChoice];
+            document.getElementById('dealer-choice').src = choiceImages[dealerChoice];
+
+            let result = '';
+            let resultImage = '';
+
+            if (playerChoice === dealerChoice) {
+                result = `It's a tie! You both chose ${playerChoice}.`;
+            } else if (
+                (playerChoice === 'Rock' && dealerChoice === 'Scissors') ||
+                (playerChoice === 'Paper' && dealerChoice === 'Rock') ||
+                (playerChoice === 'Scissors' && dealerChoice === 'Paper')
+            ) {
+                result = `You win! ${playerChoice} beats ${dealerChoice}.`;
+                playerWins++;
+            } else {
+                result = `You lose! ${dealerChoice} beats ${playerChoice}.`;
+                dealerWins++;
+            }
+
+            document.getElementById('result').textContent = result;
+            document.getElementById('result-image').innerHTML = resultImage;
+            document.getElementById('score').textContent = `Player Wins: ${playerWins} | Dealer Wins: ${dealerWins}`;
+
+            if (playerWins === 2) {
+                document.getElementById('final-result').innerHTML = '<p>恭喜你，你還活著!</p><img src="Win.jpg" alt="Win" style="width: 300px; height: 300px;">';
+                localStorage.setItem("playerChips", 1000000); // 設定籌碼為 $1,000,000
+                setTimeout(function() {
+                    window.location.href = "index.html"; 
+                }, 3000); // 延遲 3 秒後跳轉
+                resetGame();
+            } else if (dealerWins === 2) {
+                document.getElementById('final-result').innerHTML = '<p>很抱歉，你死了!</p><img src="Lose.jpg" alt="Game Over" style="width: 300px; height: 300px;">';
+                setTimeout(function() {
+                    window.location.href = "index.html"; 
+                }, 3000); // 延遲 3 秒後跳轉
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            playerWins = 0;
+            dealerWins = 0;
+            document.getElementById('score').textContent = `Player Wins: 0 | Dealer Wins: 0`;
+            document.getElementById('result').textContent = '';
+            document.getElementById('result-image').innerHTML = '';
+            document.getElementById('player-choice').src = 'blank.jpg';
+            document.getElementById('dealer-choice').src = 'blank.jpg';
+        }
+    </script>
+</body>
+</html>
